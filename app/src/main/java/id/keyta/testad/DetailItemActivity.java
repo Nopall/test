@@ -20,7 +20,6 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import id.keyta.testad.adapter.ItemAdapter;
 import id.keyta.testad.adapter.ItemRadioAdapter;
 import id.keyta.testad.model.ItemResponse;
 

@@ -67,11 +67,15 @@
             android:gravity="center"
             android:orientation="horizontal">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/listItem"
-                android:layout_gravity="center"
+            <EditText
+                android:id="@+id/txtField"
                 android:layout_width="0dp"
                 android:layout_weight="1"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:editable="false"
+                android:backgroundTint="@color/black"
+                android:inputType="none"
                 android:layout_height="wrap_content"/>
 
             <ImageView
@@ -81,11 +85,6 @@
                 android:src="@drawable/ic_baseline_close_24"/>
 
         </LinearLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/_1sdp"
-            android:background="@color/grey"/>
 
     </LinearLayout>
 

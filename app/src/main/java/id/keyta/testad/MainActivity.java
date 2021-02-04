@@ -3,13 +3,12 @@ package id.keyta.testad;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,31 +23,25 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import id.keyta.testad.adapter.ItemAdapter;
 import id.keyta.testad.model.ItemRequest;
 import id.keyta.testad.model.ItemResponse;
 import id.keyta.testad.model.MessageResponse;
 import id.keyta.testad.rest.ApiClient;
-import id.keyta.testad.rest.ApiInterface;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
-    @BindView(R.id.listItem) RecyclerView listItem;
+    @BindView(R.id.txtField)
+    EditText txtField;
     @BindView(R.id.toolbar) Toolbar toolbar;
     @BindView(R.id.root_item1) LinearLayout root_item1;
     @BindView(R.id.root_item2) LinearLayout root_item2;
     @BindView(R.id.txtSelectedItem) TextView txtSelectedItem;
     @BindView(R.id.btnSimpan)
     Button btnSimpan;
-
-    ItemAdapter adapter;
     List<ItemResponse> itemResponses = new ArrayList<>();
     ItemResponse itemResponse = new ItemResponse();
 
@@ -59,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         setupToolbar();
-        setupAdapter();
         setupData();
 
     }
@@ -67,14 +59,6 @@ public class MainActivity extends AppCompatActivity {
     void setupToolbar(){
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("Daftar Item");
-    }
-
-    void setupAdapter(){
-        adapter = new ItemAdapter(itemResponses);
-
-        listItem.setHasFixedSize(true);
-        listItem.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        listItem.setAdapter(adapter);
     }
 
     void setupData(){
@@ -90,8 +74,16 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onNext(@NonNull List<ItemResponse> responses) {
                     if (!responses.isEmpty()){
+                        ArrayList<String> strings = new ArrayList<>();
+                        for (int i = 0; i < responses.size(); i++) {
+                            strings.add(responses.get(i).getName());
+                        }
+                        String idList = strings.toString();
+                        String dataName = idList.substring(1, idList.length() - 1).replace(", ", ",");
+
                         itemResponses = responses;
-                        adapter.addAll(itemResponses);
+                        txtField.setText(dataName);
+
                     }
 
                 }
@@ -107,6 +99,15 @@ public class MainActivity extends AppCompatActivity {
 
                 }
             });
+    }
+
+    public static String convert(String[] name) {
+        StringBuilder sb = new StringBuilder();
+        for (String st : name) {
+            sb.append('\'').append(st).append('\'').append(',');
+        }
+        if (name.length != 0) sb.deleteCharAt(sb.length()-1);
+        return sb.toString();
     }
 
     @OnClick(R.id.btnSimpan)

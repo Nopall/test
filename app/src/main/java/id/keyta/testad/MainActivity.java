@@ -30,6 +30,11 @@ import id.keyta.testad.model.ItemResponse;
 import id.keyta.testad.model.MessageResponse;
 import id.keyta.testad.rest.ApiClient;
 import id.keyta.testad.rest.ApiInterface;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -73,22 +78,35 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void setupData(){
-        ApiClient.getClient().getListData().enqueue(new Callback<List<ItemResponse>>() {
-            @Override
-            public void onResponse(Call<List<ItemResponse>> call, Response<List<ItemResponse>> response) {
-                if (response.isSuccessful()){
-                    if (!response.body().isEmpty()){
-                        itemResponses = response.body();
-                        adapter.addAll(response.body());
-                    }
-                }
-            }
+        ApiClient.getClient().getListData()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(new Observer<List<ItemResponse>>() {
+                @Override
+                public void onSubscribe(@NonNull Disposable d) {
 
-            @Override
-            public void onFailure(Call<List<ItemResponse>> call, Throwable t) {
-                Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+                }
+
+                @Override
+                public void onNext(@NonNull List<ItemResponse> responses) {
+                    if (!responses.isEmpty()){
+                        itemResponses = responses;
+                        adapter.addAll(itemResponses);
+                    }
+
+                }
+
+                @Override
+                public void onError(@NonNull Throwable e) {
+                    Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+
+                }
+
+                @Override
+                public void onComplete() {
+
+                }
+            });
     }
 
     @OnClick(R.id.btnSimpan)
@@ -98,19 +116,30 @@ public class MainActivity extends AppCompatActivity {
             String json = new Gson().toJson(itemResponses, type);
             startActivityForResult(DetailItemActivity.newInstance(this, json), 1);
         }else{
-            ApiClient.getClient().kirimData(new ItemRequest(String.valueOf(itemResponse.getId()), itemResponse.getName())).enqueue(new Callback<MessageResponse>() {
-                @Override
-                public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
-                    if (response.isSuccessful()){
-                        Toast.makeText(MainActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT).show();
+            ApiClient.getClient().kirimData(new ItemRequest(String.valueOf(itemResponse.getId()), itemResponse.getName()))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<MessageResponse>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+
                     }
-                }
 
-                @Override
-                public void onFailure(Call<MessageResponse> call, Throwable t) {
+                    @Override
+                    public void onNext(@NonNull MessageResponse messageResponse) {
+                        Toast.makeText(MainActivity.this, messageResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
 
-                }
-            });
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
         }
     }
 

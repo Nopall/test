@@ -22,6 +22,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiClient {
@@ -32,7 +33,8 @@ public class ApiClient {
         if (service == null) {
             Retrofit client = new Retrofit.Builder()
                     .client(getUnsafeOkHttpClient())
-                    .baseUrl("https://test.keyta.id/api/v1/")
+                    .baseUrl("https://test.keyta.id/")
+                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
             service = client.create(ApiInterface.class);
@@ -60,6 +62,7 @@ public class ApiClient {
                     }
             };
 
+
             // Install the all-trusting trust manager
             final SSLContext sslContext = SSLContext.getInstance("SSL");
             sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
@@ -73,21 +76,16 @@ public class ApiClient {
             OkHttpClient okHttpClient = new OkHttpClient.Builder()
                     .addInterceptor(logging)
                     .sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0])
-                    .hostnameVerifier(new HostnameVerifier() {
-                        @Override
-                        public boolean verify(String hostname, SSLSession session) {
-                            return true;
-                        }
-                    })
-                    .addInterceptor(new Interceptor() {
-                        @Override
-                        public Response intercept(Chain chain) throws IOException {
-                            Request original = chain.request();
-                            Request.Builder builder = original.newBuilder().header("Content-Type", "application/json");
-                            Request request = builder.build();
+                    .hostnameVerifier((hostname, session) -> true)
+                    .addInterceptor(chain -> {
+                        Request original = chain.request();
+                        Request.Builder builder = original.newBuilder()
+                                .header("Content-Type", "application/json")
+                                .addHeader("Accept", "*/*")
+                                .addHeader("Connection", "keep-alive");
+                        Request request = builder.build();
 
-                            return chain.proceed(request);
-                        }
+                        return chain.proceed(request);
                     }).connectTimeout(240, TimeUnit.SECONDS)
                     .readTimeout(240, TimeUnit.SECONDS)
                     .writeTimeout(240, TimeUnit.SECONDS).build();

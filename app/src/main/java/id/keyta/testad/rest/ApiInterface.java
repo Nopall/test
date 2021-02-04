@@ -5,6 +5,7 @@ import java.util.List;
 import id.keyta.testad.model.ItemRequest;
 import id.keyta.testad.model.ItemResponse;
 import id.keyta.testad.model.MessageResponse;
+import io.reactivex.Observable;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.FormUrlEncoded;
@@ -14,9 +15,9 @@ import retrofit2.http.POST;
 
 public interface ApiInterface {
 
-    @GET("get_data")
-    Call<List<ItemResponse>> getListData();
+    @GET("api/v1/get_data/")
+    Observable<List<ItemResponse>> getListData();
 
-    @POST("send_data")
-    Call<MessageResponse> kirimData(@Body ItemRequest request);
+    @POST("api/v1/send_data/")
+    Observable<MessageResponse> kirimData(@Body ItemRequest request);
 }
